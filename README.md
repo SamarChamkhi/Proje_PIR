@@ -1,4 +1,4 @@
-# Proje_PIR 
+# Projet_PIR 
 
 Ce projet PIR vise à découvrir la problématique de la couverture optimale d’un
 environnement donné avec une flotte de robots coopératifs.
