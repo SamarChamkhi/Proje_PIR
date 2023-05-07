@@ -154,3 +154,36 @@ while running:
 
 # Quitter Pygame
 pygame.quit()
+
+"""global sommet
+    f = File()
+    f.Enfiler(debut)
+
+    visited = set()
+    visited.add(debut)
+
+    predecessor = {}
+    predecessor[debut] = None
+
+    while not f.FileVide():
+        current = f.Defiler()
+
+        if current == fin:
+            break
+
+        for neighbor in sommet[current]:
+            if neighbor not in visited:
+                f.Enfiler(neighbor)
+                visited.add(neighbor)
+                predecessor[neighbor] = current
+
+    # Reconstruction du plus court chemin
+    path = []
+    node = fin
+
+    while node is not None:
+        path.insert(0, node)
+        node = predecessor[node]
+
+    return len(path)
+    """
