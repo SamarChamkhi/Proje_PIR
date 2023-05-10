@@ -155,35 +155,54 @@ while running:
 # Quitter Pygame
 pygame.quit()
 
-"""global sommet
-    f = File()
-    f.Enfiler(debut)
+"""from queue import Queue
+
+def bfs(graph, start, end):
+    queue = Queue()
+    queue.put(start)
 
     visited = set()
-    visited.add(debut)
+    visited.add(start)
 
     predecessor = {}
-    predecessor[debut] = None
+    predecessor[start] = None
 
-    while not f.FileVide():
-        current = f.Defiler()
+    while not queue.empty():
+        current = queue.get()
 
-        if current == fin:
+        if current == end:
             break
 
-        for neighbor in sommet[current]:
+        for neighbor in graph[current]:
             if neighbor not in visited:
-                f.Enfiler(neighbor)
+                queue.put(neighbor)
                 visited.add(neighbor)
                 predecessor[neighbor] = current
 
     # Reconstruction du plus court chemin
     path = []
-    node = fin
+    node = end
 
     while node is not None:
         path.insert(0, node)
         node = predecessor[node]
 
-    return len(path)
+    return path
+
+# Exemple de graphe non pondéré représenté sous forme de dictionnaire d'adjacence
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B', 'F'],
+    'F': ['C', 'E']
+}
+
+start_node = 'A'
+end_node = 'F'
+
+shortest_path = bfs(graph, start_node, end_node)
+print("Le plus court chemin de", start_node, "à", end_node, "est :", shortest_path)
+
     """
