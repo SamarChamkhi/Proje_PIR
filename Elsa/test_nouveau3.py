@@ -36,13 +36,20 @@ def lloyd_algorithm(data, k, num_iterations=60):
         # Assign data points to the nearest centroid
         distances = np.linalg.norm(data[:, np.newaxis, :] - robot_positions, axis=2)
         labels = np.argmin(distances, axis=1)
+        detection_mask = np.logical_and(distances <= detection_range, distances > 0)
+        detected_indices = np.where(detection_mask)[0]
+        detected_labels = labels[detected_indices]
+    
+        
 
         # Update centroids to the mean of assigned data points
         # for j in range(k):
         #     centroids[j] = np.mean(data[labels == j], axis=0)
         for j in range(k):
-           points = data[labels == j]
-           centroids[j] = np.average(points, axis=0)
+           for l in range (len(detected_labels)) :
+                points = data[detected_labels[l] == j]
+                centroids[j] = np.average(points, axis=0)
+                
 
         # Move robots towards centroids
         for j in range(k):
@@ -64,7 +71,7 @@ def lloyd_algorithm(data, k, num_iterations=60):
 
         # Update plot
         scatter.set_offsets(data)
-        scatter.set_color([plt.cm.tab10(i) for i in labels])
+        scatter.set_color([plt.cm.tab10(i) for i in detected_labels])
         ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='red')
         ax.scatter(robot_positions[:, 0], robot_positions[:, 1], marker='.', color='black')
         #ax.contour(x, y)
@@ -79,7 +86,7 @@ def lloyd_algorithm(data, k, num_iterations=60):
                 duration = 200)         # optional: frames per second
     
     # Return the final centroids and labels
-    return centroids, labels
+    return centroids, detected_labels
 
 def create_frame(t):
     plt.savefig(f'./img/img_{t}.png', 
@@ -97,4 +104,4 @@ pos = np.dstack((xx, yy))
 detection_range = 0.5
 
 # Run the Lloyd algorithm with k=10 clusters
-centroids, labels = lloyd_algorithm(data, k=5)
+centroids, detected_labels = lloyd_algorithm(data, k=5)
