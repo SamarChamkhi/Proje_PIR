@@ -1,5 +1,5 @@
 from vpython import *
-import math,random,time
+import math,random,time,os
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
@@ -20,20 +20,19 @@ canvas(title='Coverage on 3D surface',
 tailleSommet = 0.7
 coulSommet = [
     color.green,     
-    color.white,     
+    color.black,     
     color.blue,   # Jaune
     color.cyan,   # Magenta
     color.magenta,   # Cyan
     color.orange,   # Orange
     color.purple,   # Violet
-    color.yellow, # Beige
-    color.black,   # Vert lime
+    color.white, # Beige
+    color.yellow,   # Vert lime
 ]
 sommet=[]
 calculSommet = []
-a = 100
-b = 100
-moyRes = []
+a = 25
+b = 25
 for i in range(a) :    #à modifier pour nbre sommet en x
     sommet.append([])
     calculSommet.append([])
@@ -78,7 +77,6 @@ def RobotInit(robot:list):
 robot=[]
 oldRobot=[]
 debut = True
-euclid = True
 for i in range(3):
     robot.append([i,i,0])
 if debut == True : 
@@ -88,28 +86,21 @@ def EstRobot (a,b):
     global sommet,robot
     for k in range(len(robot)):
         if a==robot[k][0] and b==robot[k][1]:
-            calculSommet[a][b].color =color.white #color.red
+            calculSommet[a][b].color =color.red
             return True
     return False
-def Relance ():
-    global running,robot,oldRobot,tempsTot
-    if debut == True : 
-        RobotInit(robot)
-    else : 
-        for i in range(len(robot)):
-            robot[i] = [i,i,0]
-    AppartenanceSommet()
-    oldRobot=[]
-    running = True  
-    tempsTot = time.time()
-            
+
 def GestionEvent() :
-    global running,robot,oldRobot,tempsTot,boucle
+    global running,robot,oldRobot
     k = keysdown()
-    if ' ' in k and running==False:
-        boucle = 0
-        running = True
-                  
+    if ' ' in k:
+            if debut == True : 
+                RobotInit(robot)
+            else : 
+                for i in range(9):
+                    robot[i] = [i,i,0]
+            AppartenanceSommet()
+            oldRobot=[]        
 
 def ParcoursLargeur(start, end):
     f = Queue()
@@ -142,30 +133,42 @@ def ParcoursLargeur(start, end):
 
     return val
     
-def calcul(delta :list,i,j) :
+def calcul(delta: list, i, j):
     for k in range(len(delta)):
-        if euclid ==False :
-            delta[k]=ParcoursLargeur(calculSommet[i][j], calculSommet[robot[k][0]][robot[k][1]])
-        else : 
-            delta[k]=math.sqrt((math.pow(robot[k][0]-i, 2) + math.pow(robot[k][1]-j, 2)+ math.pow(robot[k][2]-sommet[i][j].pos.y, 2)))
-        test = min(delta)
-        for k in range(len(robot)):
-            if test == delta[k]:
-                calculSommet[i][j].color = coulSommet[k]
-                break
-     
-def AppartenanceSommet() :
-    global sommet,coulSommet
+        delta[k] = ParcoursLargeur(calculSommet[i][j], calculSommet[robot[k][0]][robot[k][1]])
+    test = min(delta)
+    for k in range(len(robot)):
+        if test == delta[k]:
+            calculSommet[i][j].color = coulSommet[k]
+            break
+
+def AppartenanceSommet():
+    global sommet, coulSommet
     delta = []
-    pool = ThreadPoolExecutor (max_workers=2)  # Nombre de threads ou de processus souhaité
     for i in range(len(robot)):
         delta.append(500)
-    for i in range (len(sommet)):
-        for j in range (len(sommet[i])) :
-            if EstRobot (i,j)==False :
-                pool.submit(calcul(delta,i,j))
-            sommet[i][j].color = color.white #calculSommet[i][j].color
+    for i in range(len(sommet)):
+        for j in range(len(sommet[i])):
+            if EstRobot(i, j) == False:
+                calcul(delta, i, j)
+
+def calcul_parallel(delta: list, i, j):
+    delta_val = ParcoursLargeur(calculSommet[i][j], calculSommet[robot[0][0]][robot[0][1]])
+    delta.put((i, j, delta_val))
+
+def AppartenanceSommet_parallel():
+    global sommet, coulSommet
+    delta = Queue()
+    for i in range(len(sommet)):
+        for j in range(len(sommet[i])):
+            if EstRobot(i, j) == False:
+                pool.submit(calcul_parallel, delta, i, j)
     pool.shutdown()
+
+    while not delta.empty():
+        i, j, delta_val = delta.get()
+        calculSommet[i][j].color = coulSommet[delta_val]
+        
                 
 
 def ProjSurface(k,robot : list) :
@@ -210,32 +213,11 @@ def CentreMasse():
 
 running = True
 tempsDebut = time.time()
-tempsTot = time.time()
-boucle = 0
-while True : 
-    GestionEvent()
+with ProcessPoolExecutor(max_workers=2) as pool:
     while running:
-        AppartenanceSommet()
+        GestionEvent()
+        AppartenanceSommet_parallel()
         tempsFin = time.time() - tempsDebut
-        if tempsFin >0.05 :
+        if tempsFin > 0.05:
             tempsDebut = time.time()
             CentreMasse()
-            test = 0
-            if len(oldRobot) > 2*len(robot) :
-                for i in range (0,1) :
-                    for k in range (len(robot)) :
-                        if oldRobot[0][0] == oldRobot[i*len(robot)+k][0] and oldRobot[0][1] == oldRobot[i*len(robot)+k][1] :
-                            test +=1
-            if test >=1 :
-                fin = time.time()
-                moyRes.append(fin - tempsTot)
-                test = 1
-                for i in range (len(moyRes)):
-                    test+=moyRes[i]
-                test = test/len(moyRes)
-                print("Fin de convergence : ",fin - tempsTot, " moyenne des resultats : ",test," pour ",boucle," de fois")
-                if (boucle<0):
-                    Relance()
-                    boucle+=1
-                else : 
-                    running=False
