@@ -32,6 +32,9 @@ def lloyd_algorithm(data, k, num_iterations=60):
         for j in range(k):
             mask = labels == j
             points = data[mask]
+            cost = Hr(robot_positions, detection_range)
+            print("Cost: ", cost)
+            print()
             if len(points) > 0:
                 centroids[j] = np.mean(points, axis=0)
 
@@ -54,11 +57,14 @@ def lloyd_algorithm(data, k, num_iterations=60):
 
         # Update plot
         scatter.set_offsets(data)
+        #ax.set_facecolor('white')
+        #fig.patch.set_facecolor('white')
         scatter.set_color(plt.cm.tab20(0))
         scatter.set_color([plt.cm.tab20(labels[i]) for i in range(2,len(labels))])
         ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='red')
         ax.scatter(robot_positions[:, 0], robot_positions[:, 1], marker='.', color='black')
         plt.pause(0.01)
+
 
         create_frame(i)
         image = imageio.v2.imread(f'./img/img_{i}.png')
@@ -67,9 +73,51 @@ def lloyd_algorithm(data, k, num_iterations=60):
     imageio.mimsave('./img/example.gif', # output gif
                 frames,          # array of input frames
                 duration = 200)         # optional: frames per second
+    
+    
 
     # Return the final centroids and labels
-    return centroids, labels
+    return centroids, labels  
+
+
+"""
+        # Update plot
+        ax.clear()
+        ax.set_facecolor('white')
+        for j in range(k):
+            mask = labels == j
+            points = data[mask]
+            ax.fill(*zip(*points), edgecolor='white', facecolor=plt.cm.tab10(j), alpha=1)
+            ax.scatter(centroids[j, 0], centroids[j, 1], marker='x', color='red', zorder=10)
+            ax.scatter(robot_positions[j, 0], robot_positions[j, 1], marker='.', color='black', zorder=10)
+"""
+
+def Hr(robot_positions, r):
+       import numpy as np
+
+def Hr_V(P, r):
+    """
+    Calcule la fonction de couverture Hr V (P) pour un ensemble de points P, un paramètre r et une fonction phi donnée.
+
+    Args:
+        P (ndarray): Un ensemble de points, représenté sous la forme d'un tableau numpy à deux dimensions avec N lignes et M colonnes, où N est le nombre de points et M est la dimension de chaque point.
+        r (float): Un paramètre qui détermine la distance maximale entre les points pour lesquels la contribution de la fonction phi est non nulle.
+        phi (callable): Une fonction qui calcule la contribution de chaque point en fonction de sa distance à un point donné.
+
+    Returns:
+        float: La valeur de Hr V (P)
+    """
+    N = P.shape[0]
+    V = np.ones(N)
+    for i in range(N):
+        for j in range(N):
+            if i != j:
+                d = np.linalg.norm(P[i] - P[j])
+                if d <= r:
+                    V[i] += d
+    return -np.sum(V * np.log(V))
+
+
 
 
 
@@ -86,7 +134,7 @@ y = np.linspace(-2,2,n)
 xx, yy = np.meshgrid(x, y)
 data = np.c_[xx.ravel(), yy.ravel()]
 pos = np.dstack((xx, yy))
-detection_range = 0.5
+detection_range = 0.7
 
 # Run the Lloyd algorithm with k=10 clusters
-centroids, labels = lloyd_algorithm(data, k=5)
+centroids, labels = lloyd_algorithm(data, k=15)

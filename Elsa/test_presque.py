@@ -5,7 +5,6 @@ from scipy.spatial.distance import cdist
 import imageio
 
 def lloyd_algorithm(data, k, num_iterations=60):
-
     # Initialize centroids randomly
     centroids = np.zeros((k, data.shape[1]))
     centroids[:, 0] = np.random.uniform(low=0, high=0.5, size=k)
@@ -14,12 +13,6 @@ def lloyd_algorithm(data, k, num_iterations=60):
 
     # Initialize labels array
     labels = np.zeros(data.shape[0], dtype=int)
-
-    # Initialize plot
-    fig, ax = plt.subplots()
-    scatter = ax.scatter(data[:, 0], data[:, 1])
-
-    frames = []
 
     # Run the algorithm for the specified number of iterations
     for i in range(num_iterations):
@@ -51,43 +44,31 @@ def lloyd_algorithm(data, k, num_iterations=60):
             else:
                 new_position = robot_positions[j] + (step_size * direction/ distances) # update robot position by step size towards the centroid
                 robot_positions[j] = new_position
-     # Update plot
-        scatter.set_offsets(data)
-        vor = Voronoi(robot_positions)
-        voronoi_plot_2d(vor, ax=ax, show_vertices=False, line_colors='orange',
-                        line_width=2, line_alpha=0.6, point_size=2)
-        
-        regions, vertices = voronoi_finite_polygons_2d(vor)
-        for region in regions:
-            polygon = vertices[region]
-            if polygon.size == 0:
-                continue  # skip this iteration if polygon is empty
-            indices = np.array([np.where((data == point).all(axis=1))[0][0] for point in polygon])
-            mask = np.zeros(data.shape[0])
-            mask[indices] = 1
-            mask = mask.astype(bool)
-            color = np.random.rand(3)
-            ax.fill(*zip(*polygon), facecolor=color, alpha=0.2)
-            ax.scatter(data[mask, 0], data[mask, 1], color=color, marker='o')
 
+    # Compute Voronoi diagram and finite Voronoi polygons
+    vor = Voronoi(centroids)
+    regions, vertices = voronoi_finite_polygons_2d(vor)
 
-        plt.pause(0.01)
+    # Plot Voronoi diagram with centroids and robots
+    fig, ax = plt.subplots()
+    voronoi_plot_2d(vor, ax=ax, show_vertices=False, line_colors='gray', line_width=0.5)
+    ax.scatter(data[:, 0], data[:, 1])
+    ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='red')
+    ax.scatter(robot_positions[:, 0], robot_positions[:, 1], marker='.', color='black')
+    ax.set_xlim([0, 0.5])
+    ax.set_ylim([-0.5, 0])
+    plt.show()
 
-        create_frame(i)
-        image = imageio.v2.imread(f'./img/img_{i}.png')
-        frames.append(image)
+    # Create image with Voronoi cells
+    voronoi_image = np.zeros((n, n))
+    for i, polygon in enumerate(regions):
+        polygon_indices = np.array([np.where((data == point).all(axis=1))[0][0] for point in vertices[polygon]])
+        polygon_coords = data[polygon_indices]
+        polygon_coords_int = np.int32(polygon_coords*n)
+        cv2.fillConvexPoly(voronoi_image, polygon_coords_int, i+1)
+    voronoi_image = np.uint8(255*(voronoi_image>0))
 
-    # replace non-Voronoi pixels with white
-    image = np.where(image == np.max(colors) + 1, 255, image)
-    frames[-1] = np.where(frames[-1])
-        
-
-    imageio.mimsave('./img/example.gif', # output gif
-                frames,          # array of input frames
-                duration = 200)         # optional: frames per second
-
-    # Return the final centroids and labels
-    return centroids, labels
+    return centroids, labels, voronoi_image
 
 def voronoi_finite_polygons_2d(vor, radius=None):
     """
