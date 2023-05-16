@@ -33,7 +33,7 @@ yFenetre = 1000
 screen = pygame.display.set_mode((xFenetre, yFenetre))
 
 # Informations des sommets du graphe
-tailleSommet = 4
+tailleSommet = 6
 coulSommet = [
     (0, 255, 0),     # Vert pur
     (0, 0, 255),     # Bleu pur
@@ -47,9 +47,9 @@ coulSommet = [
     (0, 128, 255)    # Bleu ciel
 ]
 sommet=[]
-for i in range(200) :    #à modifier pour nbre sommet en x
+for i in range(100) :    #à modifier pour nbre sommet en x
     sommet.append([])
-    for j in range(200) : #à modifier pour nbre sommet en y
+    for j in range(50) : #à modifier pour nbre sommet en y
         sommet[i].append(Sommet(0))
         val = math.cos(i/4)
         if val<0 :
@@ -76,9 +76,11 @@ def RobotInit(robot:list):
         robot[i][2] = sommet[robot[i][0]][robot[i][1]].z
 robot=[]
 oldRobot=[]
+debut = True
 for i in range(10):
-    robot.append([0,0,0])
-RobotInit(robot)
+    robot.append([i,i,0])
+if debut == True : 
+    RobotInit(robot)
 print(robot)
     
 def GestionEvent() :
@@ -88,17 +90,23 @@ def GestionEvent() :
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key==pygame.K_SPACE:
-                RobotInit(robot)
+                if debut == True : 
+                    RobotInit(robot)
+                else : 
+                    for i in range(10):
+                        robot[i] = [i,i,0]
                 AppartenanceSommet()
                 oldRobot=[]
             elif event.key==pygame.K_BACKSPACE:
                 CentreMasse()
+                for i in range(len(robot)) :
+                    ProjSurface(i,robot)
 
             
 def VueDessus() :
     global sommet,xFenetre,yFenetre,tailleSommet,robot
     xAdapt = xFenetre/len(sommet)
-    yAdapt = yFenetre/(len(sommet[0]))
+    yAdapt = yFenetre/(2*len(sommet[0]))
     #sommets
     for i in range (len(sommet)):
         for j in range(len(sommet[i])):
@@ -116,7 +124,13 @@ def VueCote() :
         for j in range(0,len(sommet[i]),len(sommet[i])):
             zAdapt = sommet[i][j].z
             pygame.draw.circle(screen, sommet[i][j].color, (i*xAdapt+xFenetre/(2*len(sommet)),yFenetre - zAdapt*yFenetre/4-yFenetre/(2*len(sommet[i]))),tailleSommet)
-
+    #robots
+    for i in range(len(robot)):
+        zAdapt = robot [i][2]
+        print(zAdapt)
+        pygame.draw.circle(screen,(255,0,0), (robot[i][0]*xAdapt+xFenetre/(2*len(sommet)), yFenetre- zAdapt*yFenetre/4-yFenetre/(2*len(sommet[i]))),tailleSommet)
+    
+    
 def AppartenanceSommet() :
     global sommet,coulSommet
     delta = []
@@ -125,19 +139,37 @@ def AppartenanceSommet() :
     for i in range (len(sommet)):
         for j in range (len(sommet[i])) :
             for k in range(len(delta)):
-                delta[k]=math.sqrt((math.pow(robot[k][0]-i, 2) + math.pow(robot[k][1]-j, 2)))
+                delta[k]=math.sqrt((math.pow(robot[k][0]-i, 2) + math.pow(robot[k][1]-j, 2)+ math.pow(robot[k][2]-sommet[i][j].z, 2)))
             test = min(delta)
             for k in range(len(robot)):
                 if test == delta[k] :
                     sommet[i][j].color = coulSommet[k]
                     break
 
+def ProjSurface(k,robot : list) :
+    global sommet
+    delta = []
+    for i in range (len(sommet)):
+        for j in range (len(sommet[i])) :
+            val = math.sqrt((math.pow(robot[k][0]-i, 2) + math.pow(robot[k][1]-j, 2)+ math.pow(robot[k][2]-sommet[i][j].z, 2)))
+            delta.append(val)
+    test = min(delta)
+    for i in range (len(delta)) :
+        if delta[i]==test : 
+            a = math.floor(i/len(sommet[0]))
+            b = i%len(sommet[0])
+            break
+    robot[k][0] = a
+    robot[k][1] = b
+    robot[k][2] = sommet[a][b].z
+    
+    
 def CentreMasse():
     global sommet,coulSommet,robot,oldRobot
     centre=[]
     nbSommet=[]
     for i in range (len(robot)):
-        centre.append([0,0])
+        centre.append([0,0,0])
         nbSommet.append(0)      
     for i in range (len(sommet)):
         for j in range (len(sommet[i])) : 
@@ -145,13 +177,14 @@ def CentreMasse():
                 if (sommet[i][j].color==coulSommet[k]):
                     centre[k][0]+=i
                     centre[k][1]+=j
+                    centre[k][2]+=sommet[i][j].z
                     nbSommet[k]+=1
                     break
     for i in range(len(robot)):
         oldRobot.append([robot[i][0],robot[i][1]])
         robot[i][0]=int(centre[i][0]/nbSommet[i])
         robot[i][1]=int(centre[i][1]/nbSommet[i])
-        robot[i][2] = sommet[robot[i][0]][robot[i][1]].z
+        robot[i][2] = int(centre[i][2]/nbSommet[i])
     
 
 #Exécution en boucle
@@ -161,20 +194,23 @@ tempsDebut = time.time()
 while running:
     GestionEvent()
     screen.fill((255, 255, 255)) 
-    #VueCote()
+    VueCote()
     VueDessus()
     AppartenanceSommet()
     tempsFin = time.time() - tempsDebut
     if tempsFin >0.05 :
         tempsDebut = time.time()
         CentreMasse()
+        for i in range(len(robot)) :
+            ProjSurface(i,robot)
+
     
     # Texte
-    """font = pygame.font.SysFont('Arial', 24)
+    font = pygame.font.SysFont('Arial', 24)
     text = font.render('Dessus ^', True, (0, 0, 0))
     screen.blit(text, (50,(yFenetre/2)+50))
     text = font.render('Côté v', True, (0, 0, 0))
-    screen.blit(text, ((xFenetre/2),(yFenetre/2)+50))"""
+    screen.blit(text, ((xFenetre/2),(yFenetre/2)+50))
   
     
     # Rafraîchir l'écran
