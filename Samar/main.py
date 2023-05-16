@@ -6,7 +6,7 @@ import datetime
 
 # controle variables
 num_iteration_intruder = 10
-move_intruder = 1
+move_intruder = 4
 alpha = 1
 
 def lloyd_algorithm(data, k, num_iterations=60):
@@ -124,4 +124,4 @@ data = np.c_[xx.ravel(), yy.ravel()]
 pos = np.dstack((xx, yy))
 
 # Run the Lloyd algorithm with k=10 clusters
-centroids, labels = lloyd_algorithm(data, k=5)
+centroids, labels = lloyd_algorithm(data, k=10)
