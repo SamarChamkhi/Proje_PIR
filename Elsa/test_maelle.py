@@ -10,8 +10,8 @@ def lloyd_algorithm(data, k, num_iterations=60):
 
     # Initialize centroids randomly
     centroids = np.zeros((k, data.shape[1]))
-    centroids[:, 0] = np.random.uniform(low=0, high=0.5, size=k)
-    centroids[:, 1] = np.random.uniform(low=-0.5, high=0, size=k)
+    centroids[:, 0] = np.random.uniform(low=15, high=15.5, size=k)
+    centroids[:, 1] = np.random.uniform(low=14.5, high=15, size=k)
     robot_positions = centroids.copy()
 
     # Initialize labels array
@@ -76,8 +76,8 @@ def lloyd_algorithm(data, k, num_iterations=60):
         scatter.set_color([plt.cm.tab20(labels[i]) for i in range(0,len(labels))])
         ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='red', edgecolors='none', plotnonfinite= True)
         ax.scatter(robot_positions[:, 0], robot_positions[:, 1], marker='.', color='black')
-        plt.xlim(-2,2)
-        plt.ylim(-2,2)
+        plt.xlim(0,30)
+        plt.ylim(0,30)
         plt.pause(0.01)
 
 
@@ -103,12 +103,12 @@ def create_frame(t):
 
 # Generate grid data 
 n = 100
-x = np.linspace(-2,2,n)
-y = np.linspace(-2,2,n)
+x = np.linspace(0,30,n)
+y = np.linspace(0,30,n)
 xx, yy = np.meshgrid(x, y)
 data = np.c_[xx.ravel(), yy.ravel()]
 pos = np.dstack((xx, yy))
-detection_range = 0.7
+detection_range = 6
 
 # Run the Lloyd algorithm with k=10 clusters
-centroids, labels = lloyd_algorithm(data, k=15)
+centroids, labels = lloyd_algorithm(data, k=9)
