@@ -11,6 +11,7 @@ class Sommet:
         self.color = (color)
         self.neighbors = neighbors
         self.marque = False
+        self.distRobProche = 0
 
 canvas(title='Coverage on 3D surface',
      width=1000, height=1000,
@@ -31,20 +32,62 @@ coulSommet = [
 ]
 sommet=[]
 calculSommet = []
-a = 100
-b = 100
+
+#Changement des paramètres
+a = 20     #modification nombre x de sommets
+b = 20     #modification nombre y de sommets
+debut = True #placer les robots aléatoirement
+euclid = False
+nbreRobot = 3
+max = 10
+nbreGaussiennes = 5
+alea = True
+
+#faire une représentation plus fine de la courbe à côté
+
+def Cos() :
+    global sommet,calculSommet
+    for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
+        for j in range(len(sommet[i])) :
+            val = 0
+            val = math.cos((i+a/2)/4)+math.cos((j+b/2)/4)
+            if val<0 :
+                val = 0
+            sommet[i][j].pos.y=calculSommet[i][j].z = val
+    
+def Gaussienne(nbre = 1) :
+    global sommet,calculSommet,alea
+    courbes = []
+    for k in range (nbre) :
+        courbes.append([0,0,0])
+        courbes[k][0] = random.randint(1,15)
+        courbes[k][1] = random.randint(1, len(sommet)-1)
+        courbes[k][2] = random.randint(1, len(sommet[0])-1)
+    if alea == False : 
+        for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
+            for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
+                sommet[i][j].pos.y=calculSommet[i][j].z = a*math.exp(-1/(a*3/2)*math.pow(i-a/2,2)-1/(b*3/2)*math.pow(j-b/2,2))
+    else :
+       for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
+            for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
+                val = 0
+                for k in range (nbre) :
+                    val += courbes[k][0]*math.exp(-1/(courbes[k][1])*math.pow(i-courbes[k][1],2)-1/(courbes[k][2])*math.pow(j-courbes[k][2],2))
+                sommet[i][j].pos.y=calculSommet[i][j].z = val
+
 moyRes = []
+moyCouv = []
+tempsExec = 0
+couverture = 0
 for i in range(a) :    #à modifier pour nbre sommet en x
     sommet.append([])
     calculSommet.append([])
     for j in range(b) : #à modifier pour nbre sommet en y
         calculSommet[i].append(Sommet(i,j,0))
         sommet[i].append(sphere(pos = vector(i-a/2,0,j-b/2),radius = tailleSommet,color = color.white,neighbors = []))
-        val = math.cos((i+a/2)/4)+math.cos((j+b/2)/4)
-        if val<0 :
-            val = 0
-        sommet[i][j].pos.y=val*4
-        calculSommet[i][j].z = val*4
+
+Gaussienne(nbreGaussiennes)      
+
 for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
     for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
         neighborsSomm = []
@@ -77,9 +120,7 @@ def RobotInit(robot:list):
         robot[i][2] = sommet[robot[i][0]][robot[i][1]].pos.y
 robot=[]
 oldRobot=[]
-debut = True
-euclid = True
-for i in range(3):
+for i in range(nbreRobot):
     robot.append([i,i,0])
 if debut == True : 
     RobotInit(robot)
@@ -88,7 +129,7 @@ def EstRobot (a,b):
     global sommet,robot
     for k in range(len(robot)):
         if a==robot[k][0] and b==robot[k][1]:
-            calculSommet[a][b].color =color.white #color.red
+            calculSommet[a][b].color =color.red
             return True
     return False
 def Relance ():
@@ -102,14 +143,13 @@ def Relance ():
     oldRobot=[]
     running = True  
     tempsTot = time.time()
+    Gaussienne(nbreGaussiennes)
             
 def GestionEvent() :
     global running,robot,oldRobot,tempsTot,boucle
     k = keysdown()
-    if ' ' in k and running==False:
-        boucle = 0
-        running = True
-                  
+    if ' ' in k :
+        Relance()                  
 
 def ParcoursLargeur(start, end):
     f = Queue()
@@ -139,7 +179,6 @@ def ParcoursLargeur(start, end):
         node = predecessor[node]
     for i in range (len(path)-1) : 
         val += math.sqrt((math.pow(path[i].x - path[i+1].x, 2) + math.pow(path[i].y - path[i+1].y, 2)+ math.pow(path[i].z - path[i+1].z, 2)))
-
     return val
     
 def calcul(delta :list,i,j) :
@@ -152,6 +191,7 @@ def calcul(delta :list,i,j) :
         for k in range(len(robot)):
             if test == delta[k]:
                 calculSommet[i][j].color = coulSommet[k]
+                calculSommet[i][j].distRobProche=test
                 break
      
 def AppartenanceSommet() :
@@ -164,7 +204,7 @@ def AppartenanceSommet() :
         for j in range (len(sommet[i])) :
             if EstRobot (i,j)==False :
                 pool.submit(calcul(delta,i,j))
-            sommet[i][j].color = color.white #calculSommet[i][j].color
+            sommet[i][j].color = calculSommet[i][j].color
     pool.shutdown()
                 
 
@@ -201,41 +241,68 @@ def CentreMasse():
                     centre[k][2]+=sommet[i][j].pos.y
                     nbSommet[k]+=1
                     break
+    if len(oldRobot)>=len(robot)*2 :
+            for i in range(len(robot)):
+                oldRobot.pop(0)
     for i in range(len(robot)):
         oldRobot.append([robot[i][0],robot[i][1]])
         robot[i][0]=int(centre[i][0]/nbSommet[i])
         robot[i][1]=int(centre[i][1]/nbSommet[i])
         robot[i][2] = int(centre[i][2]/nbSommet[i])
 
-
 running = True
 tempsDebut = time.time()
 tempsTot = time.time()
-boucle = 0
+boucle = 1
 while True : 
     GestionEvent()
     while running:
         AppartenanceSommet()
         tempsFin = time.time() - tempsDebut
-        if tempsFin >0.05 :
-            tempsDebut = time.time()
-            CentreMasse()
-            test = 0
-            if len(oldRobot) > 2*len(robot) :
-                for i in range (0,1) :
-                    for k in range (len(robot)) :
-                        if oldRobot[0][0] == oldRobot[i*len(robot)+k][0] and oldRobot[0][1] == oldRobot[i*len(robot)+k][1] :
-                            test +=1
-            if test >=1 :
-                fin = time.time()
-                moyRes.append(fin - tempsTot)
-                test = 1
-                for i in range (len(moyRes)):
-                    test+=moyRes[i]
-                test = test/len(moyRes)
-                print("Fin de convergence : ",fin - tempsTot, " moyenne des resultats : ",test," pour ",boucle," de fois")
-                if (boucle<0):
-                    Relance()
-                    boucle+=1
+        tempsDebut = time.time()
+        CentreMasse()
+        test = 0
+        if len(oldRobot) >= 2*len(robot) :
+            for k in range (len(robot)) :
+                if oldRobot[k][0] == oldRobot[k+len(robot)][0] and oldRobot[k][1] == oldRobot[k+len(robot)][1] :
+                    test +=1
+        if test >=len(robot) :
+            fin = time.time()
+            moyRes.append(fin - tempsTot)
+            print("Boucle ",boucle," faite, encore ",(max-boucle))
+            val = 0
+            if euclid == True :
+                euclid = False
+                delta=[]
+                for i in range(len(robot)):
+                    delta.append(500)
+                for i in range(len(calculSommet)):
+                    for j in range(len(calculSommet[i])) :
+                        if EstRobot (i,j)==False :
+                            calcul(delta,i,j)
+                            val+=calculSommet[i][j].distRobProche
+                euclid = True
+            for i in range(len(calculSommet)):
+                    for j in range(len(calculSommet[i])) :
+                            val+=calculSommet[i][j].distRobProche
+            val = val/(len(calculSommet)*len(calculSommet[0]))
+            moyCouv.append(val)
+            tempsExec=0
+            couverture=0
+            for i in range (len(moyRes)):
+                tempsExec+=moyRes[i]
+            tempsExec = tempsExec/len(moyRes)
+            for i in range (len(moyCouv)):
+                couverture+=moyCouv[i]
+            couverture = couverture/len(moyCouv)
+            
+            if (boucle<max):
+                Relance()
+                boucle+=1
+            else :
+                if (euclid ==True):
+                    print("En distance euclidienne : \n")
                 else : 
-                    running=False
+                    print("En parcours en largeur : \n")
+                print("Fin de convergence : \nTemps d'execution moyen : ",tempsExec,"s pour ",boucle," de fois\nDistance moyenne des sommets a leur robots : ",couverture) 
+                running=False
