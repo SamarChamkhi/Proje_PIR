@@ -22,38 +22,46 @@ tailleSommet = 0.7
 coulSommet = [
     color.green,     
     color.white,     
-    color.blue,   # Jaune
+    color.blue,   # Bleu
     color.cyan,   # Magenta
     color.magenta,   # Cyan
     color.orange,   # Orange
     color.purple,   # Violet
     color.yellow, # Beige
-    color.black,   # Vert lime
+    color.black,   
 ]
 sommet=[]
 calculSommet = []
+repet =0
 
 #Changement des paramètres
-a = 20     #modification nombre x de sommets
-b = 20     #modification nombre y de sommets
+a = 100     #modification nombre de sommets en x
+b = 100    #modification nombre de sommets en y
 debut = True #placer les robots aléatoirement
-euclid = False
-nbreRobot = 3
-max = 10
-nbreGaussiennes = 5
-alea = True
+euclid = True #changer la méthode de calcul
+nbreRobot = 3 
+max = 10    #nombre de boucles pour moyennage des mesures de temps et de distance moyenne robot/sommet
+nbreGaussiennes = 10 
+alea = False     #placement aléatoire des gaussiennes (False = 1 gaussienne placée au centre)
 
-#faire une représentation plus fine de la courbe à côté
 
+def Carre() :
+    global sommet,calculSommet
+    for i in range(len(sommet)) :     
+        for j in range(len(sommet[i])) :
+            val = len(sommet)/4
+            if i<=len(sommet)/4 or i>len(sommet)*3/4 or j<=len(sommet[i])/4 or j>len(sommet[i])*3/4:
+                val = 0
+            sommet[i][j].pos.y=calculSommet[i][j].z = val
 def Cos() :
     global sommet,calculSommet
-    for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
+    for i in range(len(sommet)) :
         for j in range(len(sommet[i])) :
             val = 0
             val = math.cos((i+a/2)/4)+math.cos((j+b/2)/4)
             if val<0 :
                 val = 0
-            sommet[i][j].pos.y=calculSommet[i][j].z = val
+            sommet[i][j].pos.y=calculSommet[i][j].z = 4*val
     
 def Gaussienne(nbre = 1) :
     global sommet,calculSommet,alea
@@ -64,12 +72,12 @@ def Gaussienne(nbre = 1) :
         courbes[k][1] = random.randint(1, len(sommet)-1)
         courbes[k][2] = random.randint(1, len(sommet[0])-1)
     if alea == False : 
-        for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
-            for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
+        for i in range(len(sommet)) :
+            for j in range(len(sommet[i])) : 
                 sommet[i][j].pos.y=calculSommet[i][j].z = a*math.exp(-1/(a*3/2)*math.pow(i-a/2,2)-1/(b*3/2)*math.pow(j-b/2,2))
     else :
-       for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
-            for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
+       for i in range(len(sommet)) :
+            for j in range(len(sommet[i])) : 
                 val = 0
                 for k in range (nbre) :
                     val += courbes[k][0]*math.exp(-1/(courbes[k][1])*math.pow(i-courbes[k][1],2)-1/(courbes[k][2])*math.pow(j-courbes[k][2],2))
@@ -79,17 +87,19 @@ moyRes = []
 moyCouv = []
 tempsExec = 0
 couverture = 0
-for i in range(a) :    #à modifier pour nbre sommet en x
+for i in range(a) :
     sommet.append([])
     calculSommet.append([])
-    for j in range(b) : #à modifier pour nbre sommet en y
+    for j in range(b) :
         calculSommet[i].append(Sommet(i,j,0))
         sommet[i].append(sphere(pos = vector(i-a/2,0,j-b/2),radius = tailleSommet,color = color.white,neighbors = []))
 
-Gaussienne(nbreGaussiennes)      
+Gaussienne(nbreGaussiennes)
+#Carre()
+#Cos()
 
-for i in range(len(sommet)) :    #à modifier pour nbre sommet en x
-    for j in range(len(sommet[i])) : #à modifier pour nbre sommet en y
+for i in range(len(sommet)) :
+    for j in range(len(sommet[i])) : 
         neighborsSomm = []
         for k in range (-1,2):
             for l in range (-1,2) :
@@ -141,7 +151,7 @@ def Relance ():
             robot[i] = [i,i,0]
     AppartenanceSommet()
     oldRobot=[]
-    running = True  
+    running = True
     tempsTot = time.time()
     Gaussienne(nbreGaussiennes)
             
@@ -149,7 +159,7 @@ def GestionEvent() :
     global running,robot,oldRobot,tempsTot,boucle
     k = keysdown()
     if ' ' in k :
-        Relance()                  
+        Relance()
 
 def ParcoursLargeur(start, end):
     f = Queue()
@@ -197,7 +207,7 @@ def calcul(delta :list,i,j) :
 def AppartenanceSommet() :
     global sommet,coulSommet
     delta = []
-    pool = ThreadPoolExecutor (max_workers=2)  # Nombre de threads ou de processus souhaité
+    pool = ThreadPoolExecutor (max_workers=2)  # Nombre de threads ou de processus souhaité --> NE MARCHE PAS AU FINAL
     for i in range(len(robot)):
         delta.append(500)
     for i in range (len(sommet)):
@@ -269,7 +279,7 @@ while True :
         if test >=len(robot) :
             fin = time.time()
             moyRes.append(fin - tempsTot)
-            print("Boucle ",boucle," faite, encore ",(max-boucle))
+            #print("Boucle ",boucle," faite, encore ",(max-boucle))
             val = 0
             if euclid == True :
                 euclid = False
@@ -301,8 +311,13 @@ while True :
                 boucle+=1
             else :
                 if (euclid ==True):
-                    print("En distance euclidienne : \n")
+                    print("En distance euclidienne :")
                 else : 
-                    print("En parcours en largeur : \n")
-                print("Fin de convergence : \nTemps d'execution moyen : ",tempsExec,"s pour ",boucle," de fois\nDistance moyenne des sommets a leur robots : ",couverture) 
-                running=False
+                    print("En parcours en largeur :")
+                print("Fin de convergence : \nTemps d'execution moyen : ",tempsExec,"s pour ",boucle," de fois\nDistance moyenne des sommets a leur robots : ",couverture,"\nEuclid = ",euclid,"\n\n") 
+                repet +=1
+                if repet>=2:
+                    running = False
+                else :
+                    boucle=1
+                    euclid = False
