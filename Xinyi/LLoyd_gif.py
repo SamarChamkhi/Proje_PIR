@@ -28,10 +28,10 @@ def lloyd_algorithm(data, k, num_iterations=25):
         ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='red')
         plt.pause(0.01)
         create_frame(i)
-        image = imageio.v2.imread(f'./img_{i}.png')
+        image = imageio.v2.imread(f'./img/img_{i}.png')
         frames.append(image)
     
-    imageio.mimsave('./example.gif', # output gif
+    imageio.mimsave('./img/example.gif', # output gif
                 frames,          # array of input frames
                 duration = 200)         # optional: frames per second
     
