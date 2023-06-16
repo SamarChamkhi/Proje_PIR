@@ -20,27 +20,28 @@ canvas(title='Coverage on 3D surface',
 # Informations des sommets du graphe
 tailleSommet = 0.7
 coulSommet = [
-    color.green,     
-    color.white,     
+    color.green,    #Vert 
+    color.white,   #Blanc
     color.blue,   # Bleu
-    color.cyan,   # Magenta
-    color.magenta,   # Cyan
+    color.cyan,   # Cyan
+    color.magenta,   # Magenta
     color.orange,   # Orange
     color.purple,   # Violet
-    color.yellow, # Beige
-    color.black,   
+    color.yellow, # Jaune
+    color.black,   #Noir
 ]
 sommet=[]
 calculSommet = []
 repet =0
 
 #Changement des paramètres
-a = 100     #modification nombre de sommets en x
-b = 100    #modification nombre de sommets en y
+
+a = 55     #modification nombre de sommets en x
+b = 55    #modification nombre de sommets en y
 debut = True #placer les robots aléatoirement
 euclid = True #changer la méthode de calcul
-nbreRobot = 3 
-max = 10    #nombre de boucles pour moyennage des mesures de temps et de distance moyenne robot/sommet
+nbreRobot =  3
+max = 1    #nombre de boucles pour moyennage des mesures de temps et de distance moyenne robot/sommet
 nbreGaussiennes = 10 
 alea = False     #placement aléatoire des gaussiennes (False = 1 gaussienne placée au centre)
 
@@ -74,7 +75,7 @@ def Gaussienne(nbre = 1) :
     if alea == False : 
         for i in range(len(sommet)) :
             for j in range(len(sommet[i])) : 
-                sommet[i][j].pos.y=calculSommet[i][j].z = a*math.exp(-1/(a*3/2)*math.pow(i-a/2,2)-1/(b*3/2)*math.pow(j-b/2,2))
+                sommet[i][j].pos.y=calculSommet[i][j].z = 1/2*a*math.exp(-1/(a*6)*math.pow(i-a/2,2)-1/(b*6)*math.pow(j-b/2,2))
     else :
        for i in range(len(sommet)) :
             for j in range(len(sommet[i])) : 
@@ -82,6 +83,8 @@ def Gaussienne(nbre = 1) :
                 for k in range (nbre) :
                     val += courbes[k][0]*math.exp(-1/(courbes[k][1])*math.pow(i-courbes[k][1],2)-1/(courbes[k][2])*math.pow(j-courbes[k][2],2))
                 sommet[i][j].pos.y=calculSommet[i][j].z = val
+
+#Initialisation
 
 moyRes = []
 moyCouv = []
@@ -260,6 +263,8 @@ def CentreMasse():
         robot[i][1]=int(centre[i][1]/nbSommet[i])
         robot[i][2] = int(centre[i][2]/nbSommet[i])
 
+
+#Boucle : 
 running = True
 tempsDebut = time.time()
 tempsTot = time.time()
@@ -279,7 +284,6 @@ while True :
         if test >=len(robot) :
             fin = time.time()
             moyRes.append(fin - tempsTot)
-            #print("Boucle ",boucle," faite, encore ",(max-boucle))
             val = 0
             if euclid == True :
                 euclid = False
