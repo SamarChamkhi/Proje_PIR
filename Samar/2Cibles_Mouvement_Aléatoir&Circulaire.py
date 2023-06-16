@@ -101,8 +101,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
             # ax.contour(x, y, z)
             plt.pause(0.01)
             # update intruder position
-            cdm[:, 0], cdm[:, 1], poids_centrale = new_position_i_random(
-                poids_centrale, num_iteration_intruder, ax)
+            cdm[:, 0], cdm[:, 1], poids_centrale = new_position_i_random( poids_centrale, num_iteration_intruder, ax)
             mvn = multivariate_normal(poids_centrale, cov=cov)
             rv = multivariate_normal(mean=poids_centrale, cov=cov)
             # update intruder2 position
