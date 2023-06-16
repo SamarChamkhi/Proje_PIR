@@ -8,7 +8,7 @@ import imageio
 
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 210 # Nombre d'itératons pour bouger les cibles
+move_intruder = 210  # Nombre d'itératons pour bouger les cibles
 alpha = 50
 # Paramètres du mouvement circulaire
 rayon = 0.5  # Rayon du cercle
@@ -39,7 +39,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.set_aspect('equal', adjustable='box')
     scatter = ax.scatter(data[:, 0], data[:, 1])
-   
+
     for m in range(move_intruder):
         i, j = 0, 0
         print('test  ', m, 'time ', datetime.datetime.now())
@@ -80,14 +80,14 @@ def lloyd_algorithm(data, k, num_iterations=6):
             scatter.set_offsets(data)
             scatter.set_color([plt.cm.tab10(i) for i in labels])
             ax.scatter(
-                poids_centrale2[0], poids_centrale2[1], marker='*', color='blue')
+                poids_centrale2[0], poids_centrale2[1], marker='*', color='white')
             ax.scatter(centroids[:, 0], centroids[:, 1],
                        marker='x', color='red', s=5)
             ax.scatter(
                 robot_positions[:, 0], robot_positions[:, 1], marker='o', color='black', s=5)
             # ax.contour(x, y, z)
             plt.pause(0.01)
-            
+
         if m < move_intruder - 1:
             # update intruder position
             pos_func = new_position_i_circle(
@@ -101,6 +101,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
     # Return the final centroids and labels
     plt.show()
     return centroids, labels
+
 
 def new_position_i_circle(centre, nii, axe, v_ang, r, p):
     # point = last position of the intruder
@@ -120,6 +121,7 @@ def new_position_i_circle(centre, nii, axe, v_ang, r, p):
             position = position
     # returnnnew position of the intruder
     return position
+
 
 # Generate grid data
 n = 80
