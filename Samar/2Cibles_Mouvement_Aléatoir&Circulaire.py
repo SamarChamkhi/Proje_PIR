@@ -13,7 +13,7 @@ alpha = 50
 # Paramètres du mouvement circulaire
 rayon = 0.5  # Rayon du cercle
 centre = np.array([0.0, 0.0])  # Centre du cercle
-vitesse_angulaire = 0.1  # Vitesse angulaire du mouvement
+vitesse_angulaire = 0.01  # Vitesse angulaire du mouvement
 speed = rayon * vitesse_angulaire
 
 
@@ -107,7 +107,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
             rv = multivariate_normal(mean=poids_centrale, cov=cov)
             # update intruder2 position
             pos_func = new_position_i_circle(
-                centre, num_iteration_intruder, ax, 0.01, rayon, m)
+                centre, num_iteration_intruder, ax, vitesse_angulaire, rayon, m)
             poids_centrale2 = pos_func
             cdm2[:, 0] = pos_func[0]
             cdm2[:, 1] = pos_func[1]
