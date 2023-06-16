@@ -4,11 +4,9 @@ from scipy.stats import multivariate_normal
 from scipy.spatial.distance import cdist
 import datetime
 
-
-
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 30 # Nombre d'itératons pour bouger les cibles
+move_intruder = 30  # Nombre d'itératons pour bouger les cibles
 alpha = 50
 # Paramètres du mouvement circulaire
 rayon = 0.5  # Rayon du cercle
@@ -42,22 +40,22 @@ def lloyd_algorithm(data, k, num_iterations=6):
     # # --------------------------third intruder-------------------------------------------
     xp3 = np.random.uniform(low=-0.7, high=0.5)
     yp3 = np.random.uniform(low=-0.7, high=0.7)
-    poids_centrale3 =  np.zeros(data.shape[1])
+    poids_centrale3 = np.zeros(data.shape[1])
     poids_centrale3[0] = xp3
     poids_centrale3[1] = yp3
-    print(' poids ',poids_centrale3)
+    print(' poids ', poids_centrale3)
     mvn3 = multivariate_normal(poids_centrale3, cov=cov)
     cdm3 = np.zeros((k, data.shape[1]))
-    cdm3[:,0] = xp3
-    cdm3[:,1] = yp3
+    cdm3[:, 0] = xp3
+    cdm3[:, 1] = yp3
     # # ------------------forth intruder-----------------------------------
-    poids_centrale4 =  np.zeros(data.shape[1])
+    poids_centrale4 = np.zeros(data.shape[1])
     poids_centrale4[0] = 0.9
     poids_centrale4[1] = 0.0
-    mvn4= multivariate_normal(poids_centrale4, cov=cov)
+    mvn4 = multivariate_normal(poids_centrale4, cov=cov)
     cdm4 = np.zeros((k, data.shape[1]))
-    cdm4[:,0] = poids_centrale4[0]
-    cdm4[:,1] = poids_centrale4[1]
+    cdm4[:, 0] = poids_centrale4[0]
+    cdm4[:, 1] = poids_centrale4[1]
     # # ---------------------------------------------------------------------
 
     # Initialize centroids randomly
@@ -70,7 +68,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.set_aspect('equal', adjustable='box')
     scatter = ax.scatter(data[:, 0], data[:, 1])
-    frames = []
+
     for m in range(move_intruder):
         i, j = 0, 0
         print('test  ', m, 'time ', datetime.datetime.now())
@@ -116,19 +114,23 @@ def lloyd_algorithm(data, k, num_iterations=6):
                 poids_centrale[0], poids_centrale[1], marker='*', color='blue')
             ax.scatter(
                 poids_centrale2[0], poids_centrale2[1], marker='*', color='white')
-            ax.scatter(poids_centrale3[0], poids_centrale3[1], marker='*', color='blue')
-            ax.scatter(poids_centrale4[0], poids_centrale4[1], marker='*', color='white')
+            ax.scatter(
+                poids_centrale3[0], poids_centrale3[1], marker='*', color='blue')
+            ax.scatter(
+                poids_centrale4[0], poids_centrale4[1], marker='*', color='white')
             ax.scatter(centroids[:, 0], centroids[:, 1],
                        marker='x', color='red', s=5)
             ax.scatter(
                 robot_positions[:, 0], robot_positions[:, 1], marker='o', color='black', s=5)
-            # ax.contour(x, y, z)
             plt.pause(0.01)
+
+        if m < move_intruder - 1:
             # update intruder position
             cdm[:, 0], cdm[:, 1], poids_centrale = new_position_i_random(
                 poids_centrale, num_iteration_intruder, ax)
             mvn = multivariate_normal(poids_centrale, cov=cov)
             rv = multivariate_normal(mean=poids_centrale, cov=cov)
+
             # update intruder2 position
             pos_func = new_position_i_circle(
                 centre, num_iteration_intruder, ax, vitesse_angulaire, rayon, m)
@@ -136,14 +138,18 @@ def lloyd_algorithm(data, k, num_iterations=6):
             cdm2[:, 0] = pos_func[0]
             cdm2[:, 1] = pos_func[1]
             mvn2 = multivariate_normal(pos_func, cov=cov)
+
             # update intruder3 position
-            cdm3[:,0], cdm3[:,1], poids_centrale3= new_position_i_random(poids_centrale3,num_iteration_intruder,ax)
+            cdm3[:, 0], cdm3[:, 1], poids_centrale3 = new_position_i_random(
+                poids_centrale3, num_iteration_intruder, ax)
             mvn3 = multivariate_normal(poids_centrale3, cov=cov)
+
             # update intruder4 position
-            pos_func4 = new_position_i_circle(centre,num_iteration_intruder,ax,vitesse_angulaire,0.9,m)
+            pos_func4 = new_position_i_circle(
+                centre, num_iteration_intruder, ax, vitesse_angulaire, 0.9, m)
             poids_centrale4 = pos_func4
-            cdm4[:,0] = pos_func4[0]
-            cdm4[:,1] = pos_func4[1]
+            cdm4[:, 0] = pos_func4[0]
+            cdm4[:, 1] = pos_func4[1]
             mvn4 = multivariate_normal(pos_func4, cov=cov)
         else:
             continue
@@ -203,6 +209,7 @@ def new_position_i_circle(centre, nii, axe, v_ang, r, p):
 
     # returnnnew position of the intruder
     return position
+
 
 # Generate grid data
 n = 80

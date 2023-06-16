@@ -6,8 +6,9 @@ import datetime
 
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 40 # Nombre d'itératons pour bouger les cibles
+move_intruder = 40  # Nombre d'itératons pour bouger les cibles
 alpha = 50
+
 
 def lloyd_algorithm(data, k, num_iterations=6):
 
@@ -34,7 +35,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.set_aspect('equal', adjustable='box')
     scatter = ax.scatter(data[:, 0], data[:, 1])
-    
+
     for m in range(move_intruder):
         i, j = 0, 0
         print('test  ', m, 'time ', datetime.datetime.now())
@@ -76,7 +77,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
             scatter.set_color([plt.cm.tab10(i) for i in labels])
             ax.scatter(
                 poids_centrale[0], poids_centrale[1], marker='*', color='blue')
-            
+
             ax.scatter(centroids[:, 0], centroids[:, 1],
                        marker='x', color='red', s=5)
             ax.scatter(
@@ -94,6 +95,7 @@ def lloyd_algorithm(data, k, num_iterations=6):
     # Return the final centroids and labels
     plt.show()
     return centroids, labels
+
 
 def new_position_i_random(point, nii, axe):
     # point = last position of the intruder
@@ -122,6 +124,7 @@ def new_position_i_random(point, nii, axe):
         axe.scatter(point[0], point[1], marker='*', color='blue')
     # return new position x and y of intruder, new position of the intruder
     return nxp, nyp, point
+
 
 # Generate grid data
 n = 80
