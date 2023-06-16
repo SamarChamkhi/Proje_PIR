@@ -6,7 +6,7 @@ import datetime
 
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 210
+move_intruder = 40 # Nombre d'itératons pour bouger les cibles
 alpha = 50
 
 def lloyd_algorithm(data, k, num_iterations=6):

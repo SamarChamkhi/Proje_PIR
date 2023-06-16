@@ -8,7 +8,7 @@ import imageio
 
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 210
+move_intruder = 50 # Nombre d'itératons pour bouger les cibles
 alpha = 50
 # Paramètres du mouvement circulaire
 rayon = 0.5  # Rayon du cercle

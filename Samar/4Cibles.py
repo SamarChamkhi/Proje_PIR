@@ -8,7 +8,7 @@ import datetime
 
 nb_robots = 7
 num_iteration_intruder = 3  # pour implémenter le petit mouvement de  cible
-move_intruder = 20
+move_intruder = 30 # Nombre d'itératons pour bouger les cibles
 alpha = 50
 # Paramètres du mouvement circulaire
 rayon = 0.5  # Rayon du cercle
